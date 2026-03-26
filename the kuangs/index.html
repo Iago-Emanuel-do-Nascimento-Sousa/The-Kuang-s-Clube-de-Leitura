@@ -1,0 +1,2422 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <!-- ============================================ -->
+    <!-- METADADOS E CONFIGURAÇÕES BÁSICAS -->
+    <!-- ============================================ -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Kuang's - Clube da Leitura</title>
+
+    <!-- Ícones Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- FIREBASE SDK (ADICIONADO PARA DADOS COMPARTILHADOS) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <!-- ============================================ -->
+    <!-- ESTILOS CSS -->
+    <!-- ============================================ -->
+    <style>
+      /* --- VARIÁVEIS DE CORES --- */
+      :root {
+        --azul-marinho: #001f3f;
+        --azul-bebe: #89cff0;
+        --azul-bebe-escuro: #5f9ea0;
+        --branco: #ffffff;
+        --cinza-claro: #f4f7f6;
+        --cinza-texto: #666;
+        --whatsapp: #25d366;
+        --vermelho-erro: #e74c3c;
+        --verde-sucesso: #2ecc71;
+        --laranja-aviso: #f39c12;
+      }
+
+      /* --- RESET BÁSICO --- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--cinza-claro);
+        color: var(--azul-marinho);
+      }
+
+      /* ============================================ */
+      /* HEADER / NAVBAR */
+      /* ============================================ */
+      header {
+        background-color: var(--azul-marinho);
+        color: var(--branco);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--azul-bebe);
+      }
+
+      .logo img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--azul-bebe);
+      }
+
+      nav ul {
+        display: flex;
+        list-style: none;
+        gap: 20px;
+      }
+
+      nav button {
+        background: none;
+        border: none;
+        color: var(--branco);
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.3s;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      nav button:hover,
+      nav button.active {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+      }
+
+      /* ============================================ */
+      /* LAYOUT PRINCIPAL (GRID) */
+      /* ============================================ */
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      /* ============================================ */
+      /* CARDS GERAIS */
+      /* ============================================ */
+      .card {
+        background: var(--branco);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid var(--azul-bebe);
+        position: relative;
+        overflow: hidden;
+      }
+
+      h2 {
+        color: var(--azul-marinho);
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .edit-card-btn {
+        background: none;
+        border: none;
+        color: var(--cinza-texto);
+        cursor: pointer;
+        font-size: 1rem;
+        transition: 0.2s;
+      }
+
+      .edit-card-btn:hover {
+        color: var(--azul-bebe);
+      }
+
+      /* ============================================ */
+      /* LEITURA ATUAL */
+      /* ============================================ */
+      .reading-status {
+        text-align: center;
+      }
+
+      .book-cover-large {
+        width: 150px;
+        height: 220px;
+        background-color: #ddd;
+        margin: 0 auto 15px;
+        border-radius: 5px;
+        object-fit: cover;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .progress-container {
+        margin-top: 15px;
+        text-align: left;
+      }
+
+      .progress-bar-bg {
+        background-color: #eee;
+        border-radius: 10px;
+        height: 10px;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        background-color: var(--azul-bebe);
+        height: 100%;
+        width: 0%;
+        transition: width 0.5s ease;
+      }
+
+      /* ============================================ */
+      /* BOTÕES */
+      /* ============================================ */
+      .btn-action {
+        background-color: var(--azul-marinho);
+        color: var(--branco);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+        transition: 0.3s;
+        font-size: 1rem;
+      }
+
+      .btn-action:hover {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+      }
+
+      .btn-success {
+        background-color: var(--verde-sucesso);
+      }
+      .btn-success:hover {
+        background-color: #27ae60;
+        color: white;
+      }
+
+      .btn-danger {
+        background-color: var(--vermelho-erro);
+      }
+      .btn-danger:hover {
+        background-color: #c0392b;
+        color: white;
+      }
+
+      .btn-warning {
+        background-color: var(--laranja-aviso);
+      }
+      .btn-warning:hover {
+        background-color: #d35400;
+        color: white;
+      }
+
+      .btn-whatsapp {
+        background-color: var(--whatsapp);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .btn-whatsapp:hover {
+        background-color: #128c7e;
+        color: white;
+      }
+
+      .page-nav-container {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .btn-page-nav {
+        background-color: var(--azul-marinho);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 0.9rem;
+        min-width: 40px;
+      }
+
+      .btn-page-nav:hover {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+      }
+
+      .btn-page-nav.small {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        background-color: var(--cinza-texto);
+      }
+
+      .btn-page-nav.small:hover {
+        background-color: var(--azul-bebe-escuro);
+        color: white;
+      }
+
+      /* ============================================ */
+      /* COMENTÁRIOS */
+      /* ============================================ */
+      .comment-input-wrapper {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .comment-input-wrapper input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        outline: none;
+      }
+
+      .comment-input-wrapper input:focus {
+        border-color: var(--azul-bebe);
+        box-shadow: 0 0 0 3px rgba(137, 207, 240, 0.2);
+      }
+
+      .comment-input-wrapper button {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+
+      .comment-input-wrapper button:hover {
+        background-color: var(--azul-bebe-escuro);
+        color: white;
+      }
+
+      .comment-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--cinza-texto);
+        background-color: var(--cinza-claro);
+        border-radius: 10px;
+      }
+
+      .comment-item {
+        font-size: 0.9rem;
+        color: #555;
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .comment-item .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .comment-item .comment-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .comment-item .comment-text {
+        line-height: 1.5;
+        background-color: #f9f9f9;
+        padding: 10px 15px;
+        border-radius: 10px;
+        border-top-left-radius: 0;
+      }
+
+      .comment-item .comment-meta {
+        font-size: 0.75rem;
+        color: #999;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding-left: 5px;
+      }
+
+      .comment-item .reply-btn {
+        color: var(--azul-bebe-escuro);
+        cursor: pointer;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+
+      .comment-item .reply-btn:hover {
+        color: var(--azul-marinho);
+        text-decoration: underline;
+      }
+
+      .toggle-replies-btn {
+        background: none;
+        border: none;
+        color: var(--cinza-texto);
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-top: 5px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+      }
+
+      .toggle-replies-btn:hover {
+        background-color: var(--cinza-claro);
+        color: var(--azul-marinho);
+      }
+
+      .replies-list {
+        list-style: none;
+        margin-left: 52px;
+        margin-top: 10px;
+        border-left: 2px solid var(--azul-bebe);
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .replies-list.hidden {
+        display: none;
+      }
+
+      .reply-input-wrapper {
+        display: none;
+        margin-top: 10px;
+        margin-left: 52px;
+      }
+
+      .reply-input-wrapper.active {
+        display: flex;
+        gap: 8px;
+      }
+
+      .reply-input-wrapper input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        outline: none;
+      }
+
+      .reply-input-wrapper input:focus {
+        border-color: var(--azul-bebe);
+      }
+
+      .reply-input-wrapper button {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      /* ============================================ */
+      /* INPUT DE PÁGINA EDITÁVEL */
+      /* ============================================ */
+      .page-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 15px 0;
+        justify-content: center;
+      }
+
+      .page-input-wrapper input {
+        width: 80px;
+        padding: 8px;
+        border: 2px solid var(--azul-bebe);
+        border-radius: 5px;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--azul-marinho);
+      }
+
+      .page-input-wrapper input:focus {
+        outline: none;
+        border-color: var(--azul-bebe-escuro);
+      }
+
+      .page-input-wrapper span {
+        font-weight: 600;
+      }
+
+      /* ============================================ */
+      /* HISTÓRICO DE LIVROS */
+      /* ============================================ */
+      .history-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 8px;
+        transition: 0.2s;
+      }
+
+      .history-item:hover {
+        background-color: var(--cinza-claro);
+      }
+
+      .history-thumb {
+        width: 50px;
+        height: 70px;
+        background-color: #eee;
+        border-radius: 3px;
+        flex-shrink: 0;
+        object-fit: cover;
+      }
+
+      .history-info {
+        flex: 1;
+      }
+
+      .history-info strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .history-info p {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 3px;
+      }
+
+      .view-comments-btn {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+        border: none;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .view-comments-btn:hover {
+        background-color: var(--azul-bebe-escuro);
+        color: white;
+      }
+
+      /* ============================================ */
+      /* MODAIS */
+      /* ============================================ */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 31, 63, 0.7);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 15px;
+        max-width: 700px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-header {
+        background-color: var(--azul-marinho);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 15px 15px 0 0;
+      }
+
+      .modal-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+      }
+
+      .modal-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .book-info-modal {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .book-cover-modal {
+        width: 80px;
+        height: 110px;
+        background-color: #ddd;
+        border-radius: 5px;
+        flex-shrink: 0;
+        object-fit: cover;
+      }
+
+      .book-details-modal h4 {
+        margin-bottom: 5px;
+        color: var(--azul-marinho);
+      }
+
+      .book-details-modal p {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 3px;
+      }
+
+      /* ============================================ */
+      /* LISTA DE MEMBROS CONFIRMADOS */
+      /* ============================================ */
+      .members-list {
+        margin-top: 15px;
+      }
+
+      .members-list h4 {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        color: var(--azul-marinho);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .member-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease;
+      }
+
+      .member-item:last-child {
+        border-bottom: none;
+      }
+
+      .member-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+        color: white;
+      }
+
+      .member-name {
+        flex: 1;
+      }
+
+      .member-status {
+        font-size: 0.75rem;
+        color: var(--whatsapp);
+        font-weight: 600;
+      }
+
+      /* ============================================ */
+      /* INPUT DE DATA EDITÁVEL */
+      /* ============================================ */
+      .editable-date {
+        border: 1px solid transparent;
+        padding: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-block;
+      }
+
+      .editable-date:hover {
+        border-color: var(--azul-bebe);
+        background-color: rgba(137, 207, 240, 0.1);
+      }
+
+      .editable-date input {
+        border: none;
+        background: transparent;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .editable-date input:focus {
+        outline: none;
+        cursor: text;
+      }
+
+      /* ============================================ */
+      /* TEXTO "LER MAIS" DO WHATSAPP */
+      /* ============================================ */
+      .whatsapp-desc-short {
+        display: block;
+      }
+
+      .whatsapp-desc-full {
+        display: none;
+      }
+
+      .read-more-btn {
+        background: none;
+        border: none;
+        color: var(--azul-bebe-escuro);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+        margin-top: 5px;
+        text-decoration: underline;
+      }
+
+      .read-more-btn:hover {
+        color: var(--azul-marinho);
+        text-decoration: underline;
+      }
+
+      /* ============================================ */
+      /* INPUTS EDITÁVEIS DO PROGRESSO */
+      /* ============================================ */
+      .progress-editable-value {
+        border-bottom: 1px dashed var(--cinza-texto);
+        cursor: text;
+        padding: 0 4px;
+        transition: 0.2s;
+      }
+
+      .progress-editable-value:hover,
+      .progress-editable-value:focus {
+        border-bottom: 1px solid var(--azul-bebe);
+        background-color: rgba(137, 207, 240, 0.1);
+        outline: none;
+      }
+
+      .progress-editable-value input {
+        border: none;
+        background: transparent;
+        font-weight: bold;
+        color: inherit;
+        width: 60px;
+        text-align: center;
+      }
+
+      .progress-editable-value input:focus {
+        outline: none;
+        width: 80px;
+      }
+
+      /* ============================================ */
+      /* MODAL ADICIONAR/EDITAR LIVRO */
+      /* ============================================ */
+      .modal-form-group {
+        margin-bottom: 15px;
+      }
+
+      .modal-form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .modal-form-group input,
+      .modal-form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: inherit;
+      }
+
+      .modal-form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+        max-height: 150px;
+      }
+
+      /* ============================================ */
+      /* SINOPSE (LEITURA ATUAL) */
+      /* ============================================ */
+      .synopsis-container {
+        text-align: left;
+        margin-top: 20px;
+      }
+
+      .synopsis-text {
+        font-size: 0.9rem;
+        color: #555;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        max-height: 4.8em;
+        overflow: hidden;
+        position: relative;
+        transition: max-height 0.5s ease;
+      }
+
+      .synopsis-text.expanded {
+        max-height: 1000px;
+      }
+
+      .synopsis-fade {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2em;
+        background: linear-gradient(transparent, white);
+        pointer-events: none;
+      }
+
+      .synopsis-text.expanded .synopsis-fade {
+        display: none;
+      }
+
+      .btn-read-more {
+        background: none;
+        border: none;
+        color: var(--azul-bebe-escuro);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 5px;
+        padding: 0;
+        display: block;
+        width: 100%;
+        text-align: right;
+      }
+
+      .btn-read-more:hover {
+        color: var(--azul-marinho);
+        text-decoration: underline;
+      }
+
+      /* ============================================ */
+      /* HISTÓRICO DE ENCONTROS */
+      /* ============================================ */
+      .past-meetings-section {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid var(--azul-bebe);
+      }
+
+      .past-meetings-section h3 {
+        font-size: 1rem;
+        color: var(--azul-marinho);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .past-meeting-card {
+        background-color: var(--cinza-claro);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.2s;
+      }
+
+      .past-meeting-card:hover {
+        background-color: #e8eef0;
+      }
+
+      .past-meeting-info {
+        flex: 1;
+      }
+
+      .past-meeting-date {
+        font-weight: 600;
+        color: var(--azul-marinho);
+        font-size: 0.9rem;
+      }
+
+      .past-meeting-attendees {
+        font-size: 0.8rem;
+        color: var(--cinza-texto);
+        margin-top: 3px;
+      }
+
+      .btn-view-meeting {
+        background-color: var(--azul-bebe);
+        color: var(--azul-marinho);
+        border: none;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+
+      .btn-view-meeting:hover {
+        background-color: var(--azul-bebe-escuro);
+        color: white;
+      }
+
+      /* ============================================ */
+      /* VISIBILIDADE DE SEÇÕES */
+      /* ============================================ */
+      .section-view {
+        display: none;
+      }
+
+      .section-view.active {
+        display: block;
+      }
+
+      /* ============================================ */
+      /* RESPONSIVIDADE */
+      /* ============================================ */
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+        nav ul {
+          gap: 10px;
+        }
+        nav button span {
+          display: none;
+        }
+        nav button i {
+          font-size: 1.2rem;
+        }
+        .comment-input-wrapper,
+        .reply-input-wrapper {
+          flex-direction: column;
+        }
+        .logo img {
+          width: 40px;
+          height: 40px;
+        }
+        .replies-list {
+          margin-left: 20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ============================================ -->
+    <!-- HEADER / NAVEGAÇÃO -->
+    <!-- ============================================ -->
+    <header>
+      <div class="logo">
+        <img src="images/logo-kuangs.png" alt="The Kuang's Logo" />
+        <span>The Kuang's</span>
+      </div>
+      <nav>
+        <ul>
+          <li>
+            <button onclick="showSection('feed')" class="active" id="btn-feed">
+              <i class="fas fa-home"></i> <span>Feed</span>
+            </button>
+          </li>
+          <li>
+            <button onclick="showSection('current')" id="btn-current">
+              <i class="fas fa-book-open"></i> <span>Leitura Atual</span>
+            </button>
+          </li>
+          <li>
+            <button onclick="showSection('history')" id="btn-history">
+              <i class="fas fa-history"></i> <span>Histórico</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- ============================================ -->
+    <!-- CONTAINER PRINCIPAL -->
+    <!-- ============================================ -->
+    <div class="container">
+      <!-- COLUNA ESQUERDA -->
+      <aside>
+        <div class="card">
+          <h2>
+            Meu Progresso
+            <button
+              class="edit-card-btn"
+              onclick="toggleProgressEdit()"
+              title="Editar dados"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+          </h2>
+          <div style="margin-bottom: 15px; text-align: center">
+            <span style="color: var(--cinza-texto); font-size: 0.9rem"
+              >Olá,
+            </span>
+            <span
+              id="userNameDisplay"
+              class="progress-editable-value"
+              style="font-weight: bold; font-size: 1.1rem"
+              >Leitor</span
+            >
+            <input
+              type="text"
+              id="userNameInput"
+              style="
+                display: none;
+                font-weight: bold;
+                font-size: 1.1rem;
+                text-align: center;
+              "
+              onchange="saveProgressData()"
+              onkeypress="if (event.key === 'Enter') saveProgressData();"
+            />
+          </div>
+          <p>
+            Livros lidos:
+            <span id="booksReadDisplay" class="progress-editable-value">0</span>
+            <input
+              type="number"
+              id="booksReadInput"
+              style="display: none"
+              onchange="saveProgressData()"
+              onkeypress="if (event.key === 'Enter') saveProgressData();"
+            />
+          </p>
+          <p>
+            Páginas totais:
+            <span id="pagesReadDisplay" class="progress-editable-value">0</span>
+            <input
+              type="number"
+              id="pagesReadInput"
+              style="display: none"
+              onchange="saveProgressData()"
+              onkeypress="if (event.key === 'Enter') saveProgressData();"
+            />
+          </p>
+          <p
+            id="edit-instruction"
+            style="
+              font-size: 0.75rem;
+              color: var(--azul-bebe-escuro);
+              margin-top: 10px;
+              display: none;
+            "
+          >
+            <i class="fas fa-info-circle"></i> Clique para editar. Enter para
+            salvar.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Comunidade</h2>
+          <div
+            style="
+              margin-bottom: 15px;
+              color: var(--cinza-texto);
+              font-size: 0.9rem;
+              line-height: 1.5;
+            "
+          >
+            <i class="fas fa-info-circle" style="color: var(--azul-bebe)"></i>
+            <span class="whatsapp-desc-short"
+              >Conecte-se com outros leitores do The Kuang's</span
+            >
+            <span class="whatsapp-desc-full"
+              >No nosso grupo do WhatsApp os membros se comunicam melhor,
+              interagem entre si e ajudam a obter livros para ler!</span
+            >
+            <br />
+            <button class="read-more-btn" onclick="toggleWhatsappText(this)">
+              Ler mais
+            </button>
+          </div>
+          <a
+            href="#"
+            id="whatsappLink"
+            class="btn-action btn-whatsapp"
+            target="_blank"
+          >
+            <i class="fab fa-whatsapp fa-lg"></i> <span>Entrar no Grupo</span>
+          </a>
+          <p
+            style="
+              margin-top: 10px;
+              font-size: 0.8rem;
+              color: var(--cinza-texto);
+              text-align: center;
+            "
+          >
+            <i class="fas fa-lock"></i> Grupo privado para membros
+          </p>
+        </div>
+      </aside>
+
+      <!-- COLUNA CENTRAL -->
+      <main>
+        <!-- FEED -->
+        <div id="feed" class="section-view active">
+          <div class="card">
+            <h2>
+              <i class="fas fa-comments"></i> Discussões do Clube sobre o livro
+              atual
+            </h2>
+            <div
+              style="
+                background-color: var(--cinza-claro);
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 15px">
+                <img
+                  id="feed-book-cover"
+                  src="https://m.media-amazon.com/images/I/91dSMhdIzTL._AC_UF1000,1000_QL80_.jpg"
+                  alt="Capa Livro"
+                  style="
+                    width: 60px;
+                    height: 85px;
+                    object-fit: cover;
+                    border-radius: 5px;
+                  "
+                />
+                <div>
+                  <h3 id="feed-book-title" style="margin-bottom: 5px">
+                    Trono de Vidro
+                  </h3>
+                  <p
+                    id="feed-book-author"
+                    style="color: var(--cinza-texto); font-size: 0.9rem"
+                  >
+                    Sarah J. Maas
+                  </p>
+                  <p
+                    style="
+                      color: var(--azul-bebe-escuro);
+                      font-size: 0.85rem;
+                      margin-top: 5px;
+                    "
+                  >
+                    <i class="fas fa-chart-line"></i>
+                    <span id="current-book-count">0</span> comentários
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="comment-input-wrapper">
+              <input
+                type="text"
+                id="comment-input-current"
+                placeholder="Compartilhe suas thoughts sobre a leitura..."
+                onkeypress="handleCommentKey(event, 'current')"
+              />
+              <button onclick="addComment('current')">
+                <i class="fas fa-paper-plane"></i> Enviar
+              </button>
+            </div>
+            <ul class="comment-list" id="comments-list-current">
+              <div id="empty-feed-msg" class="empty-state">
+                <i
+                  class="far fa-comments fa-2x"
+                  style="margin-bottom: 10px; opacity: 0.5"
+                ></i>
+                <p>Seja o primeiro a comentar sobre este livro!</p>
+              </div>
+            </ul>
+          </div>
+        </div>
+
+        <!-- LEITURA ATUAL -->
+        <div id="current" class="section-view">
+          <div class="card reading-status">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+              "
+            >
+              <h2 id="current-section-title" style="border: none; margin: 0">
+                Leitura do Mês: Trono de Vidro
+              </h2>
+              <button
+                class="edit-card-btn"
+                onclick="editCurrentBook()"
+                title="Editar informações do livro"
+              >
+                <i class="fas fa-pen"></i> Editar Livro
+              </button>
+            </div>
+            <img
+              id="current-book-cover"
+              src="https://m.media-amazon.com/images/I/91dSMhdIzTL._AC_UF1000,1000_QL80_.jpg"
+              alt="Capa Livro"
+              class="book-cover-large"
+            />
+            <h3 id="current-book-title">Trono de Vidro</h3>
+            <p
+              id="current-book-author"
+              style="color: #666; margin-bottom: 20px"
+            >
+              Sarah J. Maas
+            </p>
+            <div class="progress-container">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  margin-bottom: 5px;
+                "
+              >
+                <span
+                  >Total:
+                  <span id="total-pages-display">404</span> páginas</span
+                >
+              </div>
+              <div class="page-input-wrapper">
+                <span>Página atual:</span>
+                <input
+                  type="number"
+                  id="currentPageInput"
+                  value="0"
+                  min="1"
+                  onchange="updatePageFromInput()"
+                />
+                <span>de <span id="total-pages-input-display">404</span></span>
+              </div>
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill"
+                  id="clubProgressBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="page-nav-container">
+              <button
+                class="btn-page-nav small"
+                onclick="updatePage(-10)"
+                title="Voltar 10 páginas"
+              >
+                <i class="fas fa-fast-backward"></i> 10
+              </button>
+              <button
+                class="btn-page-nav"
+                onclick="updatePage(-1)"
+                title="Página anterior"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button
+                class="btn-page-nav"
+                onclick="updatePage(1)"
+                title="Próxima página"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button
+                class="btn-page-nav small"
+                onclick="updatePage(10)"
+                title="Avançar 10 páginas"
+              >
+                10 <i class="fas fa-fast-forward"></i>
+              </button>
+            </div>
+            <div
+              style="
+                margin-top: 20px;
+                display: flex;
+                gap: 10px;
+                border-top: 1px solid #eee;
+                padding-top: 20px;
+              "
+            >
+              <button
+                class="btn-action"
+                style="background-color: var(--cinza-texto)"
+                onclick="openAddBookModal(false)"
+              >
+                <i class="fas fa-plus"></i> Adicionar Novo Livro
+              </button>
+              <button class="btn-action btn-success" onclick="finishBook()">
+                <i class="fas fa-check-circle"></i> Concluir Leitura
+              </button>
+            </div>
+            <div class="synopsis-container">
+              <h4><i class="fas fa-book"></i> Sobre o Livro</h4>
+              <div id="synopsis-text-container" class="synopsis-text">
+                <p id="current-book-desc">
+                  Celaena Sardothien é uma assassina de 18 anos que vive em um
+                  campo de trabalho forçado.
+                </p>
+                <div class="synopsis-fade"></div>
+              </div>
+              <button
+                id="btn-synopsis-toggle"
+                class="btn-read-more"
+                onclick="toggleSynopsis()"
+              >
+                Ler mais
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div id="history" class="section-view">
+          <div class="card">
+            <h2>Livros Anteriores</h2>
+            <p
+              style="
+                margin-bottom: 20px;
+                color: var(--cinza-texto);
+                font-size: 0.9rem;
+              "
+            >
+              Reviva as discussões e comentários dos livros que já lemos no
+              clube.
+            </p>
+            <div id="history-list-container">
+              <p style="text-align: center; color: #999">
+                Carregando histórico...
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- COLUNA DIREITA -->
+      <aside>
+        <div class="card">
+          <h2>Próximo Encontro</h2>
+          <div id="meeting-content-area"></div>
+          <div
+            class="members-list"
+            style="
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 2px solid var(--azul-bebe);
+            "
+          >
+            <h4>
+              <i class="fas fa-users"></i> Confirmados (<span
+                id="confirmed-count"
+                >0</span
+              >)
+            </h4>
+            <div id="members-list-container">
+              <p
+                id="empty-members-msg"
+                style="
+                  font-size: 0.85rem;
+                  color: #999;
+                  text-align: center;
+                  padding: 10px;
+                "
+              >
+                Ninguém confirmou ainda. Seja o primeiro!
+              </p>
+            </div>
+          </div>
+          <div class="past-meetings-section">
+            <h3><i class="fas fa-history"></i> Encontros Passados</h3>
+            <div id="past-meetings-list">
+              <p
+                style="
+                  font-size: 0.85rem;
+                  color: #999;
+                  text-align: center;
+                  padding: 10px;
+                "
+              >
+                Carregando...
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAIS -->
+    <!-- ============================================ -->
+    <div
+      class="modal-overlay"
+      id="historyModal"
+      onclick="closeHistoryModal(event)"
+    >
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3><i class="fas fa-comments"></i> Discussões do Livro</h3>
+          <button class="modal-close" onclick="closeHistoryModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="modal-body-content"></div>
+      </div>
+    </div>
+
+    <div
+      class="modal-overlay"
+      id="addBookModal"
+      onclick="closeAddBookModal(event)"
+    >
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3 id="add-book-modal-title">
+            <i class="fas fa-book-medical"></i> Adicionar Novo Livro
+          </h3>
+          <button class="modal-close" onclick="closeAddBookModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-form-group">
+            <label>Título do Livro</label>
+            <input
+              type="text"
+              id="new-book-title"
+              placeholder="Ex: Harry Potter"
+            />
+          </div>
+          <div class="modal-form-group">
+            <label>Autor</label>
+            <input
+              type="text"
+              id="new-book-author"
+              placeholder="Ex: J.K. Rowling"
+            />
+          </div>
+          <div class="modal-form-group">
+            <label>Total de Páginas</label>
+            <input type="number" id="new-book-pages" placeholder="Ex: 300" />
+          </div>
+          <div class="modal-form-group">
+            <label>URL da Capa (Opcional)</label>
+            <input type="text" id="new-book-cover" placeholder="https://..." />
+          </div>
+          <div class="modal-form-group">
+            <label>Sinopse / Descrição</label>
+            <textarea
+              id="new-book-desc"
+              rows="4"
+              placeholder="Escreva uma breve sinopse do livro..."
+            ></textarea>
+          </div>
+          <button class="btn-action" onclick="saveNewBook()">
+            Salvar Livro
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal-overlay"
+      id="meetingDetailsModal"
+      onclick="closeMeetingDetailsModal(event)"
+    >
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3><i class="fas fa-calendar-check"></i> Detalhes do Encontro</h3>
+          <button class="modal-close" onclick="closeMeetingDetailsModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="meeting-details-content"></div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT COM FIREBASE -->
+    <!-- ============================================ -->
+    <script>
+      // ============================================
+      // CONFIGURAÇÃO DO FIREBASE
+      // ============================================
+      const firebaseConfig = {
+        apiKey: "AIzaSyC3nUwOgAdogizRvUgUmyxkiOZ9GC6cpg4",
+        authDomain: "the-kuang-s-clube-de-leitura.firebaseapp.com",
+        projectId: "the-kuang-s-clube-de-leitura",
+        storageBucket: "the-kuang-s-clube-de-leitura.firebasestorage.app",
+        messagingSenderId: "192141091279",
+        appId: "1:192141091279:web:56cb1e3b9fba2314dfb2ba",
+      };
+
+      // Inicializa Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      // ============================================
+      // VARIÁVEIS GLOBAIS
+      // ============================================
+      let currentPage = 0;
+      let totalPages = 404;
+      let isPresenceConfirmed = false;
+      let isProgressEditing = false;
+      let isFinishingBook = false;
+      let isEditingBook = false;
+
+      let currentBook = {
+        title: "Trono de Vidro",
+        author: "Sarah J. Maas",
+        cover:
+          "https://m.media-amazon.com/images/I/91dSMhdIzTL._AC_UF1000,1000_QL80_.jpg",
+        desc: "Celaena Sardothien é uma assassina de 18 anos que vive em um campo de trabalho forçado.",
+      };
+
+      let confirmedMembers = 0;
+      let currentMeetingDate = null;
+      let meetingMarkedDate = null;
+
+      // ============================================
+      // INICIALIZAÇÃO
+      // ============================================
+      document.addEventListener("DOMContentLoaded", () => {
+        // Carregar nome (LOCAL - individual)
+        const savedName = localStorage.getItem("kuangs_userName");
+        if (savedName)
+          document.getElementById("userNameDisplay").innerText = savedName;
+
+        // Carregar livro atual do Firebase
+        db.ref("livro_atual")
+          .once("value")
+          .then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              currentBook = data;
+              totalPages = data.totalPages || 404;
+              currentPage = data.currentPage || 0;
+              updateCurrentBookUI();
+            }
+          });
+
+        // Ouvir comentários em tempo real
+        carregarComentarios();
+
+        // Carregar histórico
+        renderHistory();
+
+        // Carregar encontros
+        renderMeetingArea();
+        renderPastMeetings();
+      });
+
+      // ============================================
+      // NAVEGAÇÃO
+      // ============================================
+      function showSection(sectionId) {
+        document
+          .querySelectorAll(".section-view")
+          .forEach((el) => el.classList.remove("active"));
+        document
+          .querySelectorAll("nav button")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById(sectionId).classList.add("active");
+        document.getElementById("btn-" + sectionId).classList.add("active");
+      }
+
+      // ============================================
+      // PROGRESSO DO LIVRO
+      // ============================================
+      function updatePage(amount) {
+        let newPage = currentPage + amount;
+        if (newPage < 0) newPage = 0;
+        if (newPage > totalPages) newPage = totalPages;
+        currentPage = newPage;
+        updatePageDisplay();
+        db.ref("livro_atual/currentPage").set(currentPage);
+      }
+
+      function updatePageFromInput() {
+        let newPage = parseInt(
+          document.getElementById("currentPageInput").value,
+        );
+        if (isNaN(newPage) || newPage < 0) newPage = 0;
+        if (newPage > totalPages) newPage = totalPages;
+        currentPage = newPage;
+        updatePageDisplay();
+        db.ref("livro_atual/currentPage").set(currentPage);
+      }
+
+      function updatePageDisplay() {
+        document.getElementById("currentPageInput").value = currentPage;
+        const percentage =
+          totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
+        document.getElementById("clubProgressBar").style.width =
+          percentage + "%";
+      }
+
+      // ============================================
+      // PERFIL DO USUÁRIO
+      // ============================================
+      function getUserName() {
+        return localStorage.getItem("kuangs_userName") || "Leitor";
+      }
+
+      function toggleProgressEdit() {
+        isProgressEditing = !isProgressEditing;
+        const instruction = document.getElementById("edit-instruction");
+        const display = document.getElementById("userNameDisplay");
+        const input = document.getElementById("userNameInput");
+
+        if (isProgressEditing) {
+          instruction.style.display = "block";
+          display.style.display = "none";
+          input.style.display = "inline-block";
+          input.value = display.innerText;
+          input.focus();
+        } else {
+          instruction.style.display = "none";
+          input.style.display = "none";
+          display.style.display = "inline";
+        }
+      }
+
+      function saveProgressData() {
+        const display = document.getElementById("userNameDisplay");
+        const input = document.getElementById("userNameInput");
+        const booksDisplay = document.getElementById("booksReadDisplay");
+        const booksInput = document.getElementById("booksReadInput");
+
+        display.innerText = input.value || "Leitor";
+        booksDisplay.innerText = booksInput.value || 0;
+
+        localStorage.setItem("kuangs_userName", display.innerText);
+        localStorage.setItem("kuangs_booksRead", booksDisplay.innerText);
+
+        toggleProgressEdit();
+      }
+
+      // ============================================
+      // COMENTÁRIOS (FIREBASE)
+      // ============================================
+      function addComment(type) {
+        const input = document.getElementById("comment-input-current");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const userName = getUserName();
+
+        db.ref("comentarios").push({
+          autor: userName,
+          texto: text,
+          data: new Date().toISOString(),
+          respostas: {},
+        });
+
+        input.value = "";
+      }
+
+      function addReply(commentId) {
+        const input = document.querySelector(`#reply-input-${commentId} input`);
+        const text = input.value.trim();
+        if (!text) return;
+
+        const userName = getUserName();
+
+        db.ref(`comentarios/${commentId}/respostas`).push({
+          autor: userName,
+          texto: text,
+          data: new Date().toISOString(),
+        });
+
+        input.value = "";
+        document
+          .getElementById(`reply-input-${commentId}`)
+          .classList.remove("active");
+      }
+
+      function carregarComentarios() {
+        db.ref("comentarios")
+          .orderByChild("data")
+          .on("value", (snapshot) => {
+            const dados = snapshot.val();
+            const list = document.getElementById("comments-list-current");
+            const emptyMsg = document.getElementById("empty-feed-msg");
+
+            if (!dados) {
+              if (emptyMsg) emptyMsg.style.display = "block";
+              document.getElementById("current-book-count").innerText = "0";
+              return;
+            }
+
+            if (emptyMsg) emptyMsg.style.display = "none";
+            list.innerHTML = "";
+
+            const comentarios = Object.values(dados).reverse();
+
+            comentarios.forEach((comment) => {
+              let repliesHtml = "";
+              if (comment.respostas) {
+                Object.values(comment.respostas).forEach((reply) => {
+                  repliesHtml += `
+            <li class="comment-item">
+              <div class="avatar" style="background:#89cff0;color:#001f3f;font-size:0.7rem">${reply.autor.charAt(0).toUpperCase()}</div>
+              <div class="comment-content">
+                <div class="comment-text"><strong>${reply.autor}</strong>: ${reply.texto}</div>
+                <div class="comment-meta">${formatarData(reply.data)}</div>
+              </div>
+            </li>`;
+                });
+              }
+
+              const isMe =
+                comment.autor === getUserName()
+                  ? '<span style="color:#999">(você)</span>'
+                  : "";
+              const commentId = Object.keys(dados).find(
+                (key) => dados[key] === comment,
+              );
+
+              const item = document.createElement("li");
+              item.className = "comment-item";
+              item.innerHTML = `
+        <div class="avatar" style="background:#89cff0;color:#001f3f;font-weight:bold">${comment.autor.charAt(0).toUpperCase()}</div>
+        <div class="comment-content">
+          <div class="comment-text"><strong>${comment.autor}</strong> ${isMe}: ${comment.texto}</div>
+          <div class="comment-meta">
+            ${formatarData(comment.data)}
+            <button class="reply-btn" onclick="showReplyInput('${commentId}')">Responder</button>
+          </div>
+        </div>
+        <div class="reply-input-wrapper" id="reply-input-${commentId}">
+          <input type="text" placeholder="Sua resposta..." onkeypress="if(event.key==='Enter')addReply('${commentId}')" />
+          <button onclick="addReply('${commentId}')">Enviar</button>
+        </div>
+        <ul class="replies-list">${repliesHtml}</ul>
+      `;
+              list.appendChild(item);
+            });
+
+            document.getElementById("current-book-count").innerText =
+              comentarios.length;
+          });
+      }
+
+      function formatarData(isoString) {
+        const date = new Date(isoString);
+        const now = new Date();
+        const diff = now - date;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+
+        if (hours < 1) return "Agora";
+        if (hours < 24) return `${hours}h atrás`;
+        return date.toLocaleDateString("pt-BR");
+      }
+
+      function showReplyInput(commentId) {
+        const wrapper = document.getElementById(`reply-input-${commentId}`);
+        if (wrapper) {
+          wrapper.classList.toggle("active");
+          if (wrapper.classList.contains("active"))
+            wrapper.querySelector("input").focus();
+        }
+      }
+
+      function handleCommentKey(event, type) {
+        if (event.key === "Enter") addComment(type);
+      }
+
+      function handleReplyKey(event, type, commentId) {
+        if (event.key === "Enter") addReply(commentId);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // ============================================
+      // SINOPSE
+      // ============================================
+      function toggleSynopsis() {
+        const container = document.getElementById("synopsis-text-container");
+        const btn = document.getElementById("btn-synopsis-toggle");
+        container.classList.toggle("expanded");
+        btn.innerText = container.classList.contains("expanded")
+          ? "Ler menos"
+          : "Ler mais";
+      }
+
+      // ============================================
+      // GERENCIAMENTO DE LIVROS
+      // ============================================
+      function finishBook() {
+        if (!confirm("Deseja finalizar este livro e adicionar um novo?"))
+          return;
+        isFinishingBook = true;
+        openAddBookModal(true);
+      }
+
+      function editCurrentBook() {
+        isEditingBook = true;
+        document.getElementById("new-book-title").value = currentBook.title;
+        document.getElementById("new-book-author").value = currentBook.author;
+        document.getElementById("new-book-pages").value = totalPages;
+        document.getElementById("new-book-cover").value = currentBook.cover;
+        document.getElementById("new-book-desc").value = currentBook.desc;
+        openAddBookModal(false);
+      }
+
+      function openAddBookModal(fromFinish) {
+        const modal = document.getElementById("addBookModal");
+        const title = document.getElementById("add-book-modal-title");
+
+        if (fromFinish) {
+          title.innerHTML = "Finalizar e Adicionar Próximo";
+        } else if (isEditingBook) {
+          title.innerHTML = "Editar Livro";
+        } else {
+          title.innerHTML = "Novo Livro";
+          document.getElementById("new-book-title").value = "";
+          document.getElementById("new-book-author").value = "";
+          document.getElementById("new-book-pages").value = "";
+          document.getElementById("new-book-cover").value = "";
+          document.getElementById("new-book-desc").value = "";
+        }
+        modal.classList.add("active");
+      }
+
+      function closeAddBookModal(event) {
+        if (
+          !event ||
+          event.target.id === "addBookModal" ||
+          event.target.closest(".modal-close")
+        ) {
+          document.getElementById("addBookModal").classList.remove("active");
+          isFinishingBook = false;
+          isEditingBook = false;
+        }
+      }
+
+      function saveNewBook() {
+        const title = document.getElementById("new-book-title").value;
+        const author = document.getElementById("new-book-author").value;
+        const pages = document.getElementById("new-book-pages").value;
+        const cover =
+          document.getElementById("new-book-cover").value ||
+          "https://via.placeholder.com/150x220?text=Sem+Capa";
+        const desc =
+          document.getElementById("new-book-desc").value ||
+          "Sinopse não disponível.";
+
+        if (!title || !pages) {
+          alert("Preencha Título e Páginas");
+          return;
+        }
+
+        if (isFinishingBook) {
+          db.ref("historico_livros").push({
+            title: currentBook.title,
+            author: currentBook.author,
+            cover: currentBook.cover,
+            desc: currentBook.desc,
+            totalPages: totalPages,
+            dataConclusao: new Date().toISOString(),
+          });
+
+          let count =
+            parseInt(localStorage.getItem("kuangs_booksRead") || "0") + 1;
+          localStorage.setItem("kuangs_booksRead", count);
+          document.getElementById("booksReadDisplay").innerText = count;
+
+          db.ref("comentarios").remove();
+
+          isFinishingBook = false;
+          alert("Livro concluído!");
+        }
+
+        if (isEditingBook) {
+          currentBook = { title, author, cover, desc };
+          totalPages = parseInt(pages);
+          db.ref("livro_atual").update({
+            title,
+            author,
+            cover,
+            desc,
+            totalPages,
+          });
+          updateCurrentBookUI();
+          closeAddBookModal();
+          alert("Livro atualizado!");
+          return;
+        }
+
+        currentBook = { title, author, cover, desc };
+        totalPages = parseInt(pages);
+        currentPage = 0;
+
+        db.ref("livro_atual").set({
+          title,
+          author,
+          cover,
+          desc,
+          totalPages,
+          currentPage: 0,
+        });
+
+        updateCurrentBookUI();
+        closeAddBookModal();
+        renderHistory();
+      }
+
+      function updateCurrentBookUI() {
+        document.getElementById("current-section-title").innerText =
+          `Leitura: ${currentBook.title}`;
+        document.getElementById("current-book-title").innerText =
+          currentBook.title;
+        document.getElementById("current-book-author").innerText =
+          currentBook.author;
+        document.getElementById("current-book-cover").src = currentBook.cover;
+        document.getElementById("current-book-desc").innerText =
+          currentBook.desc;
+        document.getElementById("total-pages-display").innerText = totalPages;
+        document.getElementById("total-pages-input-display").innerText =
+          totalPages;
+
+        document.getElementById("feed-book-title").innerText =
+          currentBook.title;
+        document.getElementById("feed-book-author").innerText =
+          currentBook.author;
+        document.getElementById("feed-book-cover").src = currentBook.cover;
+
+        document
+          .getElementById("synopsis-text-container")
+          .classList.remove("expanded");
+        document.getElementById("btn-synopsis-toggle").innerText = "Ler mais";
+
+        updatePageDisplay();
+      }
+
+      function renderHistory() {
+        const container = document.getElementById("history-list-container");
+
+        db.ref("historico_livros")
+          .orderByChild("dataConclusao")
+          .on("value", (snapshot) => {
+            const dados = snapshot.val();
+
+            if (!dados) {
+              container.innerHTML =
+                '<p style="text-align:center;color:#999">Nenhum livro concluído ainda.</p>';
+              return;
+            }
+
+            let html = "";
+            Object.values(dados)
+              .reverse()
+              .forEach((book) => {
+                html += `
+        <div class="history-item">
+          <img src="${book.cover}" class="history-thumb">
+          <div class="history-info">
+            <strong>${book.title}</strong>
+            <p>${book.author}</p>
+            <small>Concluído em: ${new Date(book.dataConclusao).toLocaleDateString("pt-BR")}</small>
+          </div>
+        </div>`;
+              });
+            container.innerHTML = html;
+          });
+      }
+
+      // ============================================
+      // ENCONTROS
+      // ============================================
+      function renderMeetingArea() {
+        const area = document.getElementById("meeting-content-area");
+
+        db.ref("encontro_atual")
+          .once("value")
+          .then((snapshot) => {
+            const data = snapshot.val();
+
+            if (data && data.data) {
+              currentMeetingDate = data.data;
+              meetingMarkedDate = data.marcadoEm;
+
+              const dateObj = new Date(currentMeetingDate);
+              const formatted = dateObj.toLocaleDateString("pt-BR", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+
+              area.innerHTML = `
+        <div style="text-align:center;margin:15px 0">
+          <i class="far fa-calendar-alt fa-3x" style="color:var(--azul-bebe)"></i>
+          <p style="margin-top:10px"><strong>${formatted}</strong></p>
+          <p>20:00h - Zoom</p>
+        </div>
+        <button id="btn-presence" class="btn-action" onclick="togglePresence()">
+          <i class="fas fa-check"></i> Confirmar Presença
+        </button>
+        <div style="margin-top:15px;display:flex;gap:10px">
+          <button class="btn-action btn-success" onclick="confirmMeetingOccurrence()">✓ Realizado</button>
+          <button class="btn-action btn-danger" onclick="cancelMeeting()">✕ Cancelar</button>
+        </div>`;
+
+              if (
+                data.confirmados &&
+                data.confirmados.includes(getUserName())
+              ) {
+                const btn = document.getElementById("btn-presence");
+                btn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+                btn.style.backgroundColor = "var(--vermelho-erro)";
+                isPresenceConfirmed = true;
+              }
+
+              carregarConfirmados(data.confirmados || []);
+            } else {
+              area.innerHTML = `
+        <div style="text-align:center;padding:30px;color:var(--cinza-texto)">
+          <i class="far fa-calendar-times fa-3x" style="margin-bottom:15px"></i>
+          <p>Nenhum encontro agendado.</p>
+          <button class="btn-action" onclick="startNewMeeting()">+ Agendar</button>
+        </div>`;
+            }
+          });
+      }
+
+      function startNewMeeting() {
+        const area = document.getElementById("meeting-content-area");
+        const today = new Date().toISOString().split("T")[0];
+
+        area.innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <input type="date" id="new-meeting-date" value="${today}" style="padding:10px;width:100%;margin-bottom:15px">
+      <div style="display:flex;gap:10px">
+        <button class="btn-action btn-success" onclick="saveNewMeeting()">Salvar</button>
+        <button class="btn-action" style="background:var(--cinza-texto)" onclick="renderMeetingArea()">Cancelar</button>
+      </div>
+    </div>`;
+      }
+
+      function saveNewMeeting() {
+        const date = document.getElementById("new-meeting-date").value;
+        if (date) {
+          db.ref("encontro_atual").set({
+            data: date,
+            marcadoEm: new Date().toISOString(),
+            confirmados: [],
+          });
+          renderMeetingArea();
+        }
+      }
+
+      function confirmMeetingOccurrence() {
+        if (
+          !confirm(
+            "Confirmar que este encontro ocorreu? Será movido para o histórico.",
+          )
+        )
+          return;
+
+        db.ref("encontro_atual")
+          .once("value")
+          .then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              db.ref("encontros_passados").push({
+                data: data.data,
+                marcadoEm: data.marcadoEm,
+                confirmados: data.confirmados || [],
+                realizadoEm: new Date().toISOString(),
+              });
+              db.ref("encontro_atual").remove();
+              renderMeetingArea();
+              renderPastMeetings();
+              alert("Encontro confirmado!");
+            }
+          });
+      }
+
+      function cancelMeeting() {
+        if (!confirm("Cancelar este encontro?")) return;
+        db.ref("encontro_atual").remove();
+        renderMeetingArea();
+      }
+
+      function togglePresence() {
+        const userName = getUserName();
+        const btn = document.getElementById("btn-presence");
+
+        db.ref("encontro_atual")
+          .once("value")
+          .then((snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            let confirmados = data.confirmados || [];
+
+            if (!isPresenceConfirmed) {
+              if (!confirmados.includes(userName)) confirmados.push(userName);
+              btn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+              btn.style.backgroundColor = "var(--vermelho-erro)";
+              isPresenceConfirmed = true;
+            } else {
+              confirmados = confirmados.filter((name) => name !== userName);
+              btn.innerHTML = '<i class="fas fa-check"></i> Confirmar';
+              btn.style.backgroundColor = "var(--azul-marinho)";
+              isPresenceConfirmed = false;
+            }
+
+            db.ref("encontro_atual/confirmados").set(confirmados);
+            carregarConfirmados(confirmados);
+          });
+      }
+
+      function carregarConfirmados(lista) {
+        const container = document.getElementById("members-list-container");
+        const countSpan = document.getElementById("confirmed-count");
+        const emptyMsg = document.getElementById("empty-members-msg");
+
+        confirmedMembers = lista.length;
+        countSpan.innerText = confirmedMembers;
+
+        if (lista.length === 0) {
+          container.innerHTML =
+            '<p id="empty-members-msg" style="font-size:0.85rem;color:#999;text-align:center">Ninguém confirmou ainda.</p>';
+          return;
+        }
+
+        if (emptyMsg) emptyMsg.remove();
+
+        let html = "";
+        lista.forEach((nome) => {
+          const initial = nome.charAt(0).toUpperCase();
+          const isMe =
+            nome === getUserName()
+              ? '<span style="color:var(--whatsapp);font-weight:600">(você)</span>'
+              : "";
+          html += `
+      <div class="member-item">
+        <div class="member-avatar" style="background:#89cff0;color:#001f3f;font-weight:bold">${initial}</div>
+        <span class="member-name">${nome} ${isMe}</span>
+        <span class="member-status"><i class="fas fa-check-circle"></i> Confirmado</span>
+      </div>`;
+        });
+        container.innerHTML = html;
+      }
+
+      function renderPastMeetings() {
+        const container = document.getElementById("past-meetings-list");
+
+        db.ref("encontros_passados")
+          .orderByChild("realizadoEm")
+          .on("value", (snapshot) => {
+            const dados = snapshot.val();
+
+            if (!dados) {
+              container.innerHTML =
+                '<p style="font-size:0.85rem;color:#999">Nenhum encontro passado.</p>';
+              return;
+            }
+
+            let html = "";
+            Object.values(dados)
+              .reverse()
+              .forEach((meeting) => {
+                const date = new Date(meeting.data).toLocaleDateString("pt-BR");
+                html += `
+        <div class="past-meeting-card">
+          <div class="past-meeting-info">
+            <div class="past-meeting-date">${date}</div>
+            <div class="past-meeting-attendees">${meeting.confirmados?.length || 0} participantes</div>
+          </div>
+        </div>`;
+              });
+            container.innerHTML = html;
+          });
+      }
+
+      // ============================================
+      // UTILITÁRIOS
+      // ============================================
+      function toggleWhatsappText(btn) {
+        const short = document.querySelector(".whatsapp-desc-short");
+        const full = document.querySelector(".whatsapp-desc-full");
+        if (full.style.display === "block") {
+          full.style.display = "none";
+          short.style.display = "block";
+          btn.innerText = "Ler mais";
+        } else {
+          short.style.display = "none";
+          full.style.display = "block";
+          btn.innerText = "Ler menos";
+        }
+      }
+
+      function handleDateKey(event) {
+        if (event.key === "Enter") saveDate();
+      }
+
+      function editDate() {
+        const displayDate = document.getElementById("displayDate");
+        const inputDate = document.getElementById("inputDate");
+        const dateText = displayDate.innerText;
+        const months = {
+          Janeiro: "01",
+          Fevereiro: "02",
+          Março: "03",
+          Abril: "04",
+          Maio: "05",
+          Junho: "06",
+          Julho: "07",
+          Agosto: "08",
+          Setembro: "09",
+          Outubro: "10",
+          Novembro: "11",
+          Dezembro: "12",
+        };
+        const parts = dateText.split(" de ");
+        const day = parts[0].padStart(2, "0");
+        const month = months[parts[1]];
+        const year = new Date().getFullYear();
+        inputDate.value = `${year}-${month}-${day}`;
+        displayDate.style.display = "none";
+        inputDate.style.display = "inline-block";
+        inputDate.focus();
+      }
+
+      function saveDate() {
+        const displayDate = document.getElementById("displayDate");
+        const inputDate = document.getElementById("inputDate");
+        const dateValue = inputDate.value;
+        if (dateValue) {
+          const [year, month, day] = dateValue.split("-");
+          const months = {
+            "01": "Janeiro",
+            "02": "Fevereiro",
+            "03": "Março",
+            "04": "Abril",
+            "05": "Maio",
+            "06": "Junho",
+            "07": "Julho",
+            "08": "Agosto",
+            "09": "Setembro",
+            10: "Outubro",
+            11: "Novembro",
+            12: "Dezembro",
+          };
+          displayDate.innerText = `${parseInt(day)} de ${months[month]}`;
+          currentMeetingDate = dateValue;
+          if (!meetingMarkedDate) meetingMarkedDate = new Date().toISOString();
+          db.ref("encontro_atual/data").set(dateValue);
+          db.ref("encontro_atual/marcadoEm").set(meetingMarkedDate);
+        }
+        inputDate.style.display = "none";
+        displayDate.style.display = "inline";
+      }
+
+      document.addEventListener("click", function (event) {
+        const inputDate = document.getElementById("inputDate");
+        const displayDate = document.getElementById("displayDate");
+        if (
+          inputDate &&
+          displayDate &&
+          inputDate.style.display !== "none" &&
+          !inputDate.contains(event.target) &&
+          !displayDate.contains(event.target)
+        ) {
+          saveDate();
+        }
+      });
+
+      function openHistoryCommentsFromData(bookId) {
+        const history = JSON.parse(
+          localStorage.getItem("kuangs_history") || "[]",
+        );
+        const book = history.find((b) => b.id === bookId);
+
+        if (!book) return;
+
+        const modal = document.getElementById("historyModal");
+        const modalBody = document.getElementById("modal-body-content");
+
+        let commentsHtml = "";
+        if (book.comments && book.comments.length > 0) {
+          book.comments.forEach((comment) => {
+            let repliesHtml = "";
+            if (comment.replies && comment.replies.length > 0) {
+              repliesHtml = '<ul class="replies-list">';
+              comment.replies.forEach((reply) => {
+                repliesHtml += `
+            <li class="comment-item">
+            <div class="avatar" style="background:#89cff0;color:#001f3f;font-size:0.7rem">${reply.author.charAt(0).toUpperCase()}</div>
+            <div class="comment-content">
+              <div class="comment-text"><strong>${reply.author}</strong>: ${reply.text}</div>
+              <div class="comment-meta">${reply.time}</div>
+            </div>
+            </li>`;
+              });
+              repliesHtml += "</ul>";
+            }
+
+            commentsHtml += `
+      <li class="comment-item">
+        <div class="avatar" style="background:var(--azul-bebe-escuro);color:white">${comment.author.charAt(0).toUpperCase()}</div>
+        <div class="comment-content">
+          <div class="comment-text"><strong>${comment.author}</strong>: ${comment.text}</div>
+          <div class="comment-meta">${comment.time}</div>
+        </div>
+      </li>
+      ${repliesHtml}`;
+          });
+        } else {
+          commentsHtml =
+            '<p style="text-align:center;color:#999">Nenhum comentário registrado.</p>';
+        }
+
+        modalBody.innerHTML = `
+    <div class="book-info-modal">
+      <img src="${book.cover}" class="book-cover-modal" alt="${book.title}">
+      <div class="book-details-modal">
+        <h4>${book.title}</h4>
+        <p><strong>${book.author}</strong></p>
+        <p>Concluído em: ${book.dateFinished}</p>
+      </div>
+    </div>
+    <h3 style="margin-bottom:15px;font-size:1.1rem"><i class="fas fa-comments"></i> Comentários (${book.comments ? book.comments.length : 0})</h3>
+    <ul class="comment-list">${commentsHtml}</ul>
+    <div style="margin-top:20px;padding:15px;background:var(--cinza-claro);border-radius:8px;text-align:center;color:var(--cinza-texto)">
+      <i class="fas fa-lock"></i> Discussão encerrada
+    </div>`;
+
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeHistoryModal(event) {
+        if (
+          !event ||
+          event.target.id === "historyModal" ||
+          event.target.closest(".modal-close")
+        ) {
+          document.getElementById("historyModal").classList.remove("active");
+          document.body.style.overflow = "auto";
+        }
+      }
+
+      function closeMeetingDetailsModal(event) {
+        if (
+          !event ||
+          event.target.id === "meetingDetailsModal" ||
+          event.target.closest(".modal-close")
+        ) {
+          document
+            .getElementById("meetingDetailsModal")
+            .classList.remove("active");
+          document.body.style.overflow = "auto";
+        }
+      }
+    </script>
+  </body>
+</html>
